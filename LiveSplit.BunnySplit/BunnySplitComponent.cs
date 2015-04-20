@@ -20,10 +20,13 @@ namespace LiveSplit.BunnySplit
         private CancellationTokenSource CTS = new CancellationTokenSource();
         private Thread PipeThread;
         private TimeSpan CurrentTime = new TimeSpan();
+        private TimerModel Model;
         public override string ComponentName { get { return "BunnySplit"; } }
 
-        public BunnySplitComponent()
+        public BunnySplitComponent(LiveSplitState state)
         {
+            Model = new TimerModel();
+            Model.CurrentState = state;
             PipeThread = new Thread(PipeKeepaliveFunc);
             PipeThread.Start();
         }
@@ -56,27 +59,46 @@ namespace LiveSplit.BunnySplit
                 Debug.WriteLine("Trying to communicate through the pipe.");
                 try
                 {
-                    var buf = new byte[17];
-                    buf[0] = 0x01;
-                    Pipe.Write(buf, 0, 1);
-
+                    Pipe.WriteByte(0x01);
                     Debug.WriteLine("Wrote 0x01 to the pipe.");
 
-                    if (Pipe.Read(buf, 0, 17) == 17)
+                    int len = Pipe.ReadByte();
+                    if (len >= 17)
                     {
-                        if (buf[0] == 0x01)
+                        var buf = new byte[len];
+                        if (Pipe.Read(buf, 0, len) == len)
                         {
-                            var hours = BitConverter.ToInt32(buf, 1);
-                            var minutes = BitConverter.ToInt32(buf, 5);
-                            var seconds = BitConverter.ToInt32(buf, 9);
-                            var milliseconds = BitConverter.ToInt32(buf, 13);
+                            var hours = BitConverter.ToInt32(buf, 0);
+                            var minutes = BitConverter.ToInt32(buf, 4);
+                            var seconds = BitConverter.ToInt32(buf, 8);
+                            var milliseconds = BitConverter.ToInt32(buf, 12);
                             CurrentTime = new TimeSpan(hours / 24, hours % 24, minutes, seconds, milliseconds);
                             Debug.WriteLine("Received time: {0}:{1}:{2}.{3}.", hours, minutes, seconds, milliseconds);
+
+                            // 0x00 = paused;
+                            // 0x01 = running.
+                            switch (buf[16])
+                            {
+                                case 0x00:
+                                    if (state.CurrentPhase == TimerPhase.Running)
+                                        Model.Pause();
+                                    break;
+                                case 0x01:
+                                    if (state.CurrentPhase == TimerPhase.Paused)
+                                        Model.Pause();
+                                    else if (state.CurrentPhase == TimerPhase.NotRunning)
+                                        Model.Start();
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Read less bytes than requested.");
                         }
                     }
                     else
                     {
-                        Debug.WriteLine("Read less bytes than requested. The pipe has probably disconnected.");
+                        Debug.WriteLine("Len is < 17!");
                     }
                 }
                 catch (Exception e)

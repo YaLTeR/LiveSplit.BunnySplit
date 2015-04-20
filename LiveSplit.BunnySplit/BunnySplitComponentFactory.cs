@@ -19,7 +19,7 @@ namespace LiveSplit.BunnySplit
 
         public IComponent Create(LiveSplitState state)
         {
-            return new BunnySplitComponent();
+            return new BunnySplitComponent(state);
         }
     }
 }
