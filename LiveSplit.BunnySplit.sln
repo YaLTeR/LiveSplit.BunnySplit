@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22609.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveSplit.BunnySplit", "LiveSplit.BunnySplit\LiveSplit.BunnySplit.csproj", "{7EE18AD3-CDC4-4473-8B5E-24A2281466EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4AE6BC2-3BEA-42F2-BDD4-FBF97A5F7050}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
