@@ -169,21 +169,27 @@ namespace LiveSplit.BunnySplit
             visitedMaps.Clear();
         }
 
+        private TimeSpan ParseTime(byte[] buf, int offset)
+        {
+            var hours = BitConverter.ToUInt32(buf, offset);
+            var minutes = buf[offset + 4];
+            var seconds = buf[offset + 5];
+            var milliseconds = BitConverter.ToUInt16(buf, offset + 6);
+            return new TimeSpan((int)(hours / 24), (int)(hours % 24u), minutes, seconds, milliseconds);
+        }
+
         private void ParseMessage(byte[] buf)
         {
             switch (buf[1])
             {
                 case (byte)MessageType.Time:
                     {
-                        var hours = BitConverter.ToInt32(buf, 2);
-                        var minutes = BitConverter.ToInt32(buf, 6);
-                        var seconds = BitConverter.ToInt32(buf, 10);
-                        var milliseconds = BitConverter.ToInt32(buf, 14);
-                        //Debug.WriteLine("Received time: {0}:{1}:{2}.{3}.", hours, minutes, seconds, milliseconds);
+                        var time = ParseTime(buf, 2);
+                        //Debug.WriteLine("Received time: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
 
                         lock (currentTimeLock)
                         {
-                            currentTime = new TimeSpan(hours / 24, hours % 24, minutes, seconds, milliseconds);
+                            currentTime = time;
                         }
                     }
                     break;
@@ -191,11 +197,7 @@ namespace LiveSplit.BunnySplit
                 case (byte)MessageType.Event:
                     {
                         var eventType = buf[2];
-                        var hours = BitConverter.ToInt32(buf, 3);
-                        var minutes = BitConverter.ToInt32(buf, 7);
-                        var seconds = BitConverter.ToInt32(buf, 11);
-                        var milliseconds = BitConverter.ToInt32(buf, 15);
-                        var time = new TimeSpan(hours / 24, hours % 24, minutes, seconds, milliseconds);
+                        var time = ParseTime(buf, 3);
 
                         switch (eventType)
                         {
@@ -206,21 +208,21 @@ namespace LiveSplit.BunnySplit
                                     {
                                         events.Add(ev);
                                     }
-                                    Debug.WriteLine("Received a game end event: {0}:{1}:{2}.{3}.", hours, minutes, seconds, milliseconds);
+                                    Debug.WriteLine("Received a game end event: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
                                 }
                                 break;
 
                             case (byte)EventType.MapChange:
                                 {
-                                    var len = BitConverter.ToInt32(buf, 19);
-                                    string map = System.Text.Encoding.ASCII.GetString(buf, 23, len);
+                                    var len = BitConverter.ToInt32(buf, 11);
+                                    string map = System.Text.Encoding.ASCII.GetString(buf, 15, len);
 
                                     var ev = new MapChangeEvent { Time = time, Map = map };
                                     lock (eventsLock)
                                     {
                                         events.Add(ev);
                                     }
-                                    Debug.WriteLine("Received a map change event: {0}:{1}:{2}.{3}; {4}.", hours, minutes, seconds, milliseconds, map);
+                                    Debug.WriteLine("Received a map change event: {0}:{1}:{2}.{3}; {4}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds, map);
                                 }
                                 break;
 
@@ -231,7 +233,7 @@ namespace LiveSplit.BunnySplit
                                     {
                                         events.Add(ev);
                                     }
-                                    Debug.WriteLine("Received a timer reset event: {0}:{1}:{2}.{3}.", hours, minutes, seconds, milliseconds);
+                                    Debug.WriteLine("Received a timer reset event: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
                                 }
                                 break;
 
@@ -242,7 +244,7 @@ namespace LiveSplit.BunnySplit
                                     {
                                         events.Add(ev);
                                     }
-                                    Debug.WriteLine("Received a timer start event: {0}:{1}:{2}.{3}.", hours, minutes, seconds, milliseconds);
+                                    Debug.WriteLine("Received a timer start event: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
                                 }
                                 break;
 
