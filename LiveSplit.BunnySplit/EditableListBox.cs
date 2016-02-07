@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 namespace LiveSplit.BunnySplit
 {
+    // Original EditableListBox by Fatalis at https://github.com/fatalis.
+    
     /// <summary>
     /// A DataGridView that emulates the look of a ListBox and can be edited.
     /// </summary>
