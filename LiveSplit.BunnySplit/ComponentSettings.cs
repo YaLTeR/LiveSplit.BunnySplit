@@ -49,7 +49,11 @@ namespace LiveSplit.BunnySplit
 
         private readonly List<string> bs_chapter_maps = new List<string>
         {
-
+            "ba_canal1",    // Duty Calls
+            "ba_yard1",     // Captive Freight
+            "ba_xen1",      // Focal Point
+            "ba_power1"     // Power Struggle
+            // A Leap of Faith has special handling.
         };
 
         private readonly List<string> gmc_chapter_maps = new List<string>
@@ -156,7 +160,7 @@ namespace LiveSplit.BunnySplit
 
         public bool ShouldSplitOn(string map)
         {
-            if (!EnableAutoSplitCheckbox.Checked)
+            if (!IsAutoSplitEnabled())
                 return false;
 
             if (SplitOnHL1ChaptersCheckbox.Checked && hl1_chapter_maps.Contains(map))
@@ -176,7 +180,12 @@ namespace LiveSplit.BunnySplit
 
         public bool ShouldSplitOnGameEnd()
         {
-            return EnableAutoSplitCheckbox.Checked && SplitOnGameEndCheckbox.Checked;
+            return IsAutoSplitEnabled() && SplitOnGameEndCheckbox.Checked;
+        }
+
+        public bool IsAutoSplitEnabled()
+        {
+            return EnableAutoSplitCheckbox.Checked;
         }
 
         public bool IsAutoResetEnabled()
@@ -191,7 +200,7 @@ namespace LiveSplit.BunnySplit
 
         private void SetAutoSplitCheckboxColors()
         {
-            if (EnableAutoSplitCheckbox.Checked)
+            if (IsAutoSplitEnabled())
             {
                 SplitOnGameEndCheckbox.ForeColor = Color.FromKnownColor(KnownColor.ControlText);
                 SplitOnHL1ChaptersCheckbox.ForeColor = Color.FromKnownColor(KnownColor.ControlText);

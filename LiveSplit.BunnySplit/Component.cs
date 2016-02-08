@@ -29,7 +29,8 @@ namespace LiveSplit.BunnySplit
             GameEnd = 0x00,
             MapChange = 0x01,
             TimerReset = 0x02,
-            TimerStart = 0x03
+            TimerStart = 0x03,
+            BS_ALeapOfFaith = 0x04
         }
 
         private interface IEvent
@@ -53,6 +54,10 @@ namespace LiveSplit.BunnySplit
         {
             public TimeSpan Time { get; set; }
         }
+        private struct BS_ALeapOfFaithEvent : IEvent
+        {
+            public TimeSpan Time { get; set; }
+        }
 
         private ComponentSettings settings = new ComponentSettings();
         private NamedPipeClientStream pipe = new NamedPipeClientStream(
@@ -70,6 +75,7 @@ namespace LiveSplit.BunnySplit
         private List<IEvent> events = new List<IEvent>();
         private object eventsLock = new object();
         private HashSet<string> visitedMaps = new HashSet<string>();
+        private bool splitOnBSALeapOfFaith = false;
 
         private DateTime lastTime = DateTime.Now;
 
@@ -145,6 +151,15 @@ namespace LiveSplit.BunnySplit
                             start = true;
                         }
                     }
+                    else if (ev is BS_ALeapOfFaithEvent)
+                    {
+                        if (!splitOnBSALeapOfFaith)
+                        {
+                            state.SetGameTime(ev.Time);
+                            model.Split();
+                            splitOnBSALeapOfFaith = true;
+                        }
+                    }
                 }
                 events.Clear();
             }
@@ -167,6 +182,7 @@ namespace LiveSplit.BunnySplit
             }
 
             visitedMaps.Clear();
+            splitOnBSALeapOfFaith = false;
         }
 
         private TimeSpan ParseTime(byte[] buf, int offset)
@@ -245,6 +261,17 @@ namespace LiveSplit.BunnySplit
                                         events.Add(ev);
                                     }
                                     Debug.WriteLine("Received a timer start event: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+                                }
+                                break;
+
+                            case (byte)EventType.BS_ALeapOfFaith:
+                                {
+                                    var ev = new BS_ALeapOfFaithEvent() { Time = time };
+                                    lock (eventsLock)
+                                    {
+                                        events.Add(ev);
+                                    }
+                                    Debug.WriteLine("Received a BS A Leap of Faith event: {0}:{1}:{2}.{3}.", time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
                                 }
                                 break;
 
