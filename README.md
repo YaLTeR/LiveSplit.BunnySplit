@@ -4,8 +4,8 @@ BunnySplit
 An AutoSplit component which works with Bunnymod XT (BXT). Written in C# 6 / .NET Framework 4.5.
 
 #Download
-- [Here](http://play.sourceruns.org/BunnySplit/LiveSplit.BunnySplit.dll)
-- From supported games in LiveSplit (soon).
+- From supported games in LiveSplit.
+- [Here](http://play.sourceruns.org/BunnySplit/LiveSplit.BunnySplit.dll).
 
 #Usage
 - You will need to run the game with [Bunnymod XT](https://github.com/YaLTeR/BunnymodXT).
